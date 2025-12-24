@@ -35,6 +35,46 @@ https://e3e3af3d8f8d.ngrok-free.app/mcp
 4. Enter the MCP endpoint URL: `https://e3e3af3d8f8d.ngrok-free.app/mcp`
 5. Save the configuration
 
+### Important: Browser Access Behavior
+
+**Expected Error When Accessing via Browser**:
+When navigating to the MCP endpoint (`/mcp`) directly in a web browser, you will encounter the following error:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "error": {
+    "code": -32000,
+    "message": "Not Acceptable: Client must accept text/event-stream"
+  },
+  "id": null
+}
+```
+
+**This is normal and expected behavior.** Web browsers do not send the required `Accept` headers for MCP protocol communication. The endpoint requires:
+- `Accept: application/json, text/event-stream`
+- `Content-Type: application/json`
+
+**Verification**: The MCP endpoint is functioning correctly when ChatGPT or other MCP clients connect with proper protocol headers. The error message confirms the server is running and enforcing correct communication protocols.
+
+**Testing the Endpoint Properly**:
+```bash
+# Test MCP initialization
+curl -X POST https://e3e3af3d8f8d.ngrok-free.app/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test-client","version":"1.0.0"}},"id":1}'
+
+# Expected response:
+# {"result":{"protocolVersion":"2024-11-05","capabilities":{"resources":{"listChanged":true},"tools":{"listChanged":true}},"serverInfo":{"name":"todo-app","version":"0.1.0"}},"jsonrpc":"2.0","id":1}
+
+# List available tools
+curl -X POST https://e3e3af3d8f8d.ngrok-free.app/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","method":"tools/list","params":{},"id":2}'
+```
+
 ## Available Resources and Tools
 
 ### Resources
