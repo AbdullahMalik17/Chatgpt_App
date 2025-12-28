@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Review MCP Tester</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.3s;
+        }
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        textarea {
+            min-height: 200px;
+            resize: vertical;
+        }
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+        .btn-analyze {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+        .btn-analyze:hover { background: #5568d3; }
+        .btn-security {
+            background: #f59e0b;
+            color: white;
+            flex: 1;
+        }
+        .btn-security:hover { background: #d97706; }
+        .btn-languages {
+            background: #10b981;
+            color: white;
+        }
+        .btn-languages:hover { background: #059669; }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: none;
+        }
+        .result.show { display: block; }
+        .result h3 {
+            color: #374151;
+            margin-bottom: 15px;
+        }
+        .result pre {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .error {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+        .error h3 { color: #dc2626; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+        .stat-errors { color: #ef4444; }
+        .stat-warnings { color: #f59e0b; }
+        .stat-suggestions { color: #3b82f6; }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #fff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>
+            <span class="status"></span>
+            Code Review MCP Server
+        </h1>
+        <p class="subtitle">Professional code analysis and security scanning</p>
+
+        <div class="section">
+            <label for="language">Programming Language</label>
+            <select id="language">
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="go">Go</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+            </select>
+        </div>
+
+        <div class="section">
+            <label for="code">Code to Analyze</label>
+            <textarea id="code" placeholder="Paste your code here...">function getUserData(userId) {
+  // SQL Injection vulnerability
+  const query = 'SELECT * FROM users WHERE id = ' + userId;
+
+  // Hardcoded secret
+  const apiKey = 'sk-1234567890abcdef';
+
+  // Missing error handling
+  return db.query(query);
+}</textarea>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-analyze" onclick="analyzeCode()">
+                🔍 Analyze Code
+            </button>
+            <button class="btn-security" onclick="securityScan()">
+                🔒 Security Scan
+            </button>
+            <button class="btn-languages" onclick="listLanguages()">
+                📋 List Languages
+            </button>
+        </div>
+
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'https://0c0109b4e456.ngrok-free.app';
+        let sessionId = null;
+
+        // Generate session ID
+        function generateSessionId() {
+            return 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'.replace(/x/g, () =>
+                Math.floor(Math.random() * 16).toString(16)
+            );
+        }
+
+        async function callMCP(method, toolName, args = {}) {
+            if (!sessionId) {
+                sessionId = generateSessionId();
+            }
+
+            const body = {
+                jsonrpc: "2.0",
+                id: Date.now(),
+                method: method,
+                params: toolName ? {
+                    name: toolName,
+                    arguments: args
+                } : undefined
+            };
+
+            const response = await fetch(`${SERVER_URL}/messages/?session_id=${sessionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (!response.ok) {
+                const error = await response.text();
+                throw new Error(`HTTP ${response.status}: ${error}`);
+            }
+
+            return await response.json();
+        }
+
+        function showResult(title, content, isError = false, stats = null) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result show' + (isError ? ' error' : '');
+
+            let html = `<h3>${title}</h3>`;
+
+            if (stats) {
+                html += `
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-value stat-errors">${stats.errors || 0}</div>
+                            <div class="stat-label">Errors</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value stat-warnings">${stats.warnings || 0}</div>
+                            <div class="stat-label">Warnings</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value stat-suggestions">${stats.suggestions || 0}</div>
+                            <div class="stat-label">Suggestions</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${stats.total_issues || 0}</div>
+                            <div class="stat-label">Total Issues</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `<pre>${content}</pre>`;
+            resultDiv.innerHTML = html;
+        }
+
+        async function analyzeCode() {
+            const code = document.getElementById('code').value;
+            const language = document.getElementById('language').value;
+
+            if (!code.trim()) {
+                showResult('Error', 'Please enter some code to analyze', true);
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Analyzing...';
+
+            try {
+                const result = await callMCP('tools/call', 'analyze_code', { code, language });
+                const text = result.result.content[0].text;
+                const structured = result.result.structuredContent;
+
+                showResult('✓ Code Analysis Complete', text, false, structured);
+            } catch (error) {
+                showResult('✗ Analysis Failed', error.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        async function securityScan() {
+            const code = document.getElementById('code').value;
+            const language = document.getElementById('language').value;
+
+            if (!code.trim()) {
+                showResult('Error', 'Please enter some code to scan', true);
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Scanning...';
+
+            try {
+                const result = await callMCP('tools/call', 'security_scan', { code, language });
+                const text = result.result.content[0].text;
+                const structured = result.result.structuredContent;
+
+                showResult('🔒 Security Scan Complete', text, false, structured);
+            } catch (error) {
+                showResult('✗ Security Scan Failed', error.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        async function listLanguages() {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading"></span> Loading...';
+
+            try {
+                const result = await callMCP('tools/call', 'list_supported_languages');
+                const text = result.result.content[0].text;
+
+                showResult('📋 Supported Languages', text);
+            } catch (error) {
+                showResult('✗ Failed to List Languages', error.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // Test connection on load
+        window.addEventListener('load', () => {
+            console.log('MCP Tester loaded. Server:', SERVER_URL);
+        });
+    </script>
+</body>
+</html>
