@@ -46,6 +46,9 @@ WIDGETS = {
 # Create FastMCP server
 mcp = FastMCP("Code Review Tool")
 
+# Create SSE app instance for uvicorn
+app = mcp.sse_app()
+
 
 @mcp.resource(
     uri="ui://widget/{widget_name}.html",
@@ -485,7 +488,7 @@ if __name__ == "__main__":
     """)
 
     uvicorn.run(
-        "main:mcp.sse_app",
+        "main:app",
         host=host,
         port=port,
         reload=config.server.reload,
