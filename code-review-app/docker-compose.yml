@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  code-review-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: code-review-mcp-server
+    ports:
+      - "${PORT:-8001}:8001"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8001
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - MAX_CODE_LENGTH=${MAX_CODE_LENGTH:-50000}
+      - ENABLE_SECURITY_SCAN=${ENABLE_SECURITY_SCAN:-true}
+      - ENABLE_QUALITY_SCAN=${ENABLE_QUALITY_SCAN:-true}
+    env_file:
+      - .env
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - code-review-network
+
+networks:
+  code-review-network:
+    driver: bridge
