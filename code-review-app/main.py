@@ -44,7 +44,7 @@ WIDGETS = {
 }
 
 # Create FastMCP server
-mcp = FastMCP("Code Review Tool", version="2.0.0")
+mcp = FastMCP("Code Review Tool")
 
 
 @mcp.resource(
@@ -157,8 +157,7 @@ def validate_code_input(code: str, language: str) -> Optional[str]:
         "description": "Comprehensive code analysis including quality, security, and best practices",
         "readOnlyHint": True,
         "openWorldHint": False,
-    },
-    _meta=listing_meta(),
+    }
 )
 def analyze_code(
     code: str,
@@ -467,26 +466,26 @@ if __name__ == "__main__":
     logger.info(f"Starting server on {host}:{port}")
 
     print(f"""
-╔══════════════════════════════════════════════════════════════╗
-║     Code Review & Analysis Tool - MCP Server v2.0.0          ║
-╠══════════════════════════════════════════════════════════════╣
-║  Server: http://{host}:{port:<40}  ║
-║  Status: ✓ Running                                           ║
-║  Log Level: {config.server.log_level.upper():<49} ║
-║                                                              ║
-║  Supported Languages:                                        ║
-║  {', '.join(AnalyzerFactory.supported_languages())[:56]:<57} ║
-║                                                              ║
-║  Next Steps:                                                 ║
-║  1. Start ngrok: ngrok http {port:<34}  ║
-║  2. Copy ngrok HTTPS URL                                     ║
-║  3. Register in ChatGPT: https://chatgpt.com/apps           ║
-║     MCP URL: https://YOUR-NGROK-URL/mcp                     ║
-╚══════════════════════════════════════════════════════════════╝
+================================================================
+     Code Review & Analysis Tool - MCP Server v2.0.0
+================================================================
+  Server: http://{host}:{port}
+  Status: Running
+  Log Level: {config.server.log_level.upper()}
+
+  Supported Languages:
+  {', '.join(AnalyzerFactory.supported_languages())}
+
+  Next Steps:
+  1. Start ngrok: ngrok http {port}
+  2. Copy ngrok HTTPS URL
+  3. Register in ChatGPT: https://chatgpt.com/apps
+     MCP URL: https://YOUR-NGROK-URL/mcp
+================================================================
     """)
 
     uvicorn.run(
-        "main:mcp.app",
+        "main:mcp.sse_app",
         host=host,
         port=port,
         reload=config.server.reload,
